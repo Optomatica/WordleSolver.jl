@@ -1,4 +1,4 @@
-module Wordle
+module WordleSolver
 
 using CSV, DataFrames
 using StatsBase

@@ -4,7 +4,7 @@ This package allows to solve Wordle puzzles and get suggestions when you are stu
 
 Usage 
 ```julia 
-julia> using Wordle
+julia> using WordleSolver
 
 julia> wordle()
 ```
