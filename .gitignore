@@ -4,3 +4,4 @@
 scratch.jl
 /Manifest.toml
 .vscode
+/data/unigram_freq.csv
