@@ -1,17 +1,18 @@
 
 function solve_wordle(words, freqs, first_w_score)
     w_f_dict = Dict(zip(words,freqs))
+    println("New code")
     print("Enter guess word (empty for auto-suggestion): ")
     w=readline()
     if length(w) < 5
         w = sample(words,Weights(tight_scale(first_w_score)))
         println("First guess word is: $w")
     end
-    let_pos = Dict{Int,Char}()
-    let_nopos = Dict{Char,Vector{Int}}()
-    bad_lets = Set{Char}()
-    word_set = words
-    for i=2:7   
+    let_in_pos = Dict{Int,Char}()
+    let_not_in_pos = Dict{Char,Vector{Int}}()
+    let_not_word = Set{Char}()
+    word_set = copy(words)
+    for i=2:17   
         # Parsing response
         println("For each character enter (0 - gray (mistake), 1 - yellow (wrong placement), 2 - green (correct)) ")
         resp = readline()
@@ -27,17 +28,17 @@ function solve_wordle(words, freqs, first_w_score)
         for j in eachindex(resp)
             c = resp[j]
             if c=='2'
-                let_pos[j]=w[j]
+                let_in_pos[j]=w[j]
             elseif c=='1'
-                let_nopos[w[j]] = push!(get(let_nopos,w[j],Int[]),j)
+                let_not_in_pos[w[j]] = push!(get(let_not_in_pos,w[j],Int[]),j)
             else
-                push!(bad_lets,w[j]) 
+                push!(let_not_word,w[j]) 
             end
         end
         # Word recomendation 
-        word_set = filter(w->all(w[r[1]]==r[2] for r in let_pos), word_set)
-        word_set  = filter(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_nopos), word_set)
-        word_set   = filter(w->all(!occursin(c,w[setdiff(1:5,keys(let_pos))]) for c in setdiff(bad_lets,keys(let_nopos))), word_set)
+        filter!(w->all(w[r[1]]==r[2] for r in let_in_pos), word_set)
+        filter!(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_not_in_pos), word_set)
+        filter!(w->all(!occursin(c,w[setdiff(1:5,keys(let_in_pos))]) for c in setdiff(let_not_word,keys(let_not_in_pos))), word_set)
         freqs =  [w_f_dict[w] for w in word_set]
         print("Enter next guess word (empty for auto-suggestion): ")
         w=readline()
