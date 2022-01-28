@@ -1,4 +1,4 @@
-function update_constraints(secret_word,candidate_word, let_in_pos, let_not_in_pos, let_not_in_word)
+function update_constraints_by_comparison!(secret_word,candidate_word, let_in_pos, let_not_in_pos, let_not_in_word)
     for i in eachindex(candidate_word)
         if secret_word[i] == candidate_word[i]
             let_in_pos[i]=candidate_word[i]
@@ -67,7 +67,7 @@ function steps_to_solve_prob(all_words, w_f_dict, target_word, guess_word)
     for i=1:6
         word_attempt == target_word && return i
         i==6  && return i 
-        word_matches!(target_word,word_attempt,let_in_pos,let_not_in_pos,let_not_in_word)
+        update_constraints_by_comparison!(target_word,word_attempt,let_in_pos,let_not_in_pos,let_not_in_word)
         word_set = filter(w->all(w[r[1]]==r[2] for r in let_in_pos), word_set)
         word_set  = filter(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_not_in_pos), word_set)
         word_set   = filter(w->all(!occursin(c,w) for c in let_not_in_word), word_set)
@@ -87,7 +87,7 @@ function steps_to_solve(all_words, target_word, guess_word)
     for i=1:6
         word_attempt == target_word && return i
         i==6  && return i 
-        word_matches!(target_word,word_attempt,let_in_pos,let_not_in_pos,let_not_in_word)
+        update_constraints_by_comparison!(target_word,word_attempt,let_in_pos,let_not_in_pos,let_not_in_word)
         word_set = filter(w->all(w[r[1]]==r[2] for r in let_in_pos), word_set)
         word_set  = filter(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_not_in_pos), word_set)
         word_set   = filter(w->all(!occursin(c,w) for c in let_not_in_word), word_set)
