@@ -14,7 +14,7 @@ end
 function word_set_reduction!(word_set, let_in_pos, let_not_in_pos, let_not_in_word)
     filter!(w->all(w[r[1]]==r[2] for r in let_in_pos), word_set)
     filter!(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_not_in_pos), word_set)
-    filter!(w->all(!occursin(c,w[setdiff(1:5,keys(let_in_pos))]) for c in setdiff(let_not_in_word,keys(let_not_in_pos))), word_set)
+    filter!(w->all(!occursin(c,[cc for cc in w][setdiff(1:5,keys(let_in_pos))]) for c in setdiff(let_not_in_word,keys(let_not_in_pos))), word_set)
 end
 
 function solve_wordle(words, freqs, first_w_score, max_steps=6)
