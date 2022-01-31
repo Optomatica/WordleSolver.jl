@@ -1,12 +1,12 @@
 function update_constraints_by_response!(word, response, let_in_pos, let_not_in_pos, let_not_in_word)
-    for i in eachindex(response)
+    for (i,w_c) in enumerate(word)
         c = response[i]
         if c=='2'
-            let_in_pos[i]=word[i]
+            let_in_pos[i]=w_c
         elseif c=='1'
-            let_not_in_pos[word[i]] = push!(get(let_not_in_pos,word[i],Int[]),i)
+            let_not_in_pos[w_c] = push!(get(let_not_in_pos,w_c,Int[]),i)
         else
-            push!(let_not_in_word,word[i]) 
+            push!(let_not_in_word,w_c) 
         end
     end
 end
