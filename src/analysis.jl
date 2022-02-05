@@ -56,45 +56,62 @@ function firstwordscore_prob(words,freqs,trials)
     score
 end
 
-function steps_to_solve_prob(all_words, w_f_dict, target_word, guess_word)
-    w = guess_word
-    w == target_word && return 1 #No point attempting with same word
+"""
+    gen_word_reducer_by_target(target_word, guess_word)
+
+Returns a closure that captures the constraints arounds and updates 
+the `word_set` given and word attempt. This propagation is done automatically 
+for a given `target_word` which the word that the puzzle solver is trying to guess. 
+
+The colsure function has the following signature 
+
+    reduce_wordset_by_word_target!(word_set, word_attempt)
+
+where the `word_attempt` is a guess at the `target_word`. 
+"""
+function gen_word_reducer_by_target(target_word, guess_word)
     let_in_pos = Dict{Int,Char}()
     let_not_in_pos = Dict{Char,Vector{Int}}()
     let_not_in_word = Set{Char}()
-    word_attempt = w
-    word_set = all_words
+    w = guess_word
+    function reduce_wordset_by_word_target!(word_set, word_attempt)
+        update_constraints_by_comparison!(target_word,word_attempt,let_in_pos,let_not_in_pos,let_not_in_word)
+        filter!(w->all(w[r[1]]==r[2] for r in let_in_pos), word_set)
+        filter!(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_not_in_pos), word_set)
+        filter!(w->all(!occursin(c,w) for c in let_not_in_word), word_set)
+    end
+end
+
+function steps_to_solve_prob(word_set, w_f_dict, target_word, guess_word)
+    word_set_reducer! = gen_word_reducer_by_target(target_word, guess_word)
+    word_attempt = guess_word
+    word_set = copy(word_set)
     for i=1:6
         word_attempt == target_word && return i
         i==6  && return i 
-        update_constraints_by_comparison!(target_word,word_attempt,let_in_pos,let_not_in_pos,let_not_in_word)
-        word_set = filter(w->all(w[r[1]]==r[2] for r in let_in_pos), word_set)
-        word_set  = filter(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_not_in_pos), word_set)
-        word_set   = filter(w->all(!occursin(c,w) for c in let_not_in_word), word_set)
+        word_set = word_set_reducer!(word_set,word_attempt)
         freqs =  [w_f_dict[w] for w in word_set]
         word_attempt = sample(word_set,FrequencyWeights(freqs)) 
     end
 end
 
-function steps_to_solve(all_words, target_word, guess_word)
-    w = guess_word
-    w == target_word && return 1 #No point attempting with same word
-    let_in_pos = Dict{Int,Char}()
-    let_not_in_pos = Dict{Char,Vector{Int}}()
-    let_not_in_word = Set{Char}()
-    word_attempt = w
-    word_set = all_words
+function steps_to_solve(word_set, target_word, guess_word)
+    word_set_reducer! = gen_word_reducer_by_target(target_word, guess_word)
+    word_attempt = guess_word
+    word_set = copy(word_set)
     for i=1:6
         word_attempt == target_word && return i
         i==6  && return i 
-        update_constraints_by_comparison!(target_word,word_attempt,let_in_pos,let_not_in_pos,let_not_in_word)
-        word_set = filter(w->all(w[r[1]]==r[2] for r in let_in_pos), word_set)
-        word_set  = filter(w->all(occursin(s[1],w) && all(w[p]!=s[1] for p in s[2]) for s in let_not_in_pos), word_set)
-        word_set   = filter(w->all(!occursin(c,w) for c in let_not_in_word), word_set)
+        word_set = word_set_reducer!(word_set,word_attempt)
         word_attempt = rand(word_set) 
     end
 end
 
+"""
+    calc_score_probs(words,scores)
+Calcualtes the depth and safety scores for any array or and their assocaited dictionary 
+of that contains the expermental accumelation of success and failures. 
+"""
 function calc_score_probs(words,scores)
     depth_score = zeros(length(words))
     safety_score = zeros(length(words))

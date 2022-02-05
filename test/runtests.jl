@@ -1,6 +1,6 @@
-using Wordle
+using WordleSolver
 using Test
 
-@testset "Wordle.jl" begin
+@testset "WordleSolver.jl" begin
     # Write your tests here.
 end

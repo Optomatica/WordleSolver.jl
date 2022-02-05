@@ -1,4 +1,4 @@
-# Wordle
+# WordleSolver
 
 This package allows to solve Wordle puzzles and get suggestions when you are stumped. 
 
